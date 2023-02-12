@@ -8,7 +8,6 @@ on:
 
 env:
   CURL: 'curl -fsSL --netrc-optional'
-  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
 jobs:
   update:
