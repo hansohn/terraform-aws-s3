@@ -4,15 +4,11 @@ name: auto-context
 on:
   workflow_dispatch:
   schedule:
-<<<<<<< Updated upstream
-    - cron: '0 3 * * *'
+    - cron: '0 6 * * 1'
 
 env:
   CURL: 'curl -fsSL --netrc-optional'
   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-=======
-  - cron:  '0 6 * * 1'
->>>>>>> Stashed changes
 
 jobs:
   update:
