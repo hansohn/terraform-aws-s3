@@ -6,6 +6,396 @@ provider "aws" {
   region = var.region
 }
 
-module "root" {
-  source = "../../"
+data "aws_caller_identity" "current" {}
+data "aws_canonical_user_id" "current" {}
+data "aws_cloudfront_log_delivery_canonical_user_id" "cloudfront" {}
+
+module "utils" {
+  source  = "cloudposse/utils/aws"
+  version = "1.1.0"
+}
+
+locals {
+  az_map       = module.utils.region_az_alt_code_maps["to_short"]
+  region_short = local.az_map[var.region]
+}
+
+resource "aws_kms_key" "s3" {
+  description             = "KMS key is used to encrypt bucket objects"
+  deletion_window_in_days = 7
+}
+
+data "aws_iam_policy_document" "ec2_role" {
+  statement {
+    sid    = "Ec2AssumeRole"
+    effect = "Allow"
+    actions = [
+      "sts:AssumeRole"
+    ]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ec2_role" {
+  name               = "ec2-role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_role.json
+}
+
+data "aws_iam_policy_document" "s3_bucket_policy" {
+  statement {
+    sid    = "S3ListBucket"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [
+      "arn:aws:s3:::${module.this.id}",
+    ]
+    principals {
+      type        = "AWS"
+      identifiers = [aws_iam_role.ec2_role.arn]
+    }
+  }
+}
+
+module "log_bucket" {
+  source      = "../../"
+  context     = module.this.context
+  environment = local.region_short
+  attributes  = ["logs"]
+
+  bucket_force_destroy = true
+
+  # acl
+  enable_acl = true
+  acl        = "log-delivery-write"
+
+  # bucket policies
+  enable_policy                         = true
+  attach_deny_insecure_transport_policy = true
+  attach_require_latest_tls_policy      = true
+}
+
+module "cloudfront_log_bucket" {
+  source      = "../../"
+  context     = module.this.context
+  environment = local.region_short
+  attributes  = ["cloudfront", "logs"]
+
+  bucket_force_destroy = true
+
+  # acl
+  enable_acl = true
+  acl_access_control_policy = [
+    {
+      grant = [
+        {
+          permission = "FULL_CONTROL"
+          grantee = [{
+            id   = data.aws_canonical_user_id.current.id
+            type = "CanonicalUser"
+          }]
+        },
+        {
+          permission = "FULL_CONTROL"
+          grantee = [{
+            type = "CanonicalUser"
+            id   = data.aws_cloudfront_log_delivery_canonical_user_id.cloudfront.id # Ref. https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html
+          }]
+        },
+      ]
+      owner = [{
+        id = data.aws_canonical_user_id.current.id
+      }]
+    }
+  ]
+}
+
+module "s3_bucket" {
+  source      = "../../"
+  context     = module.this.context
+  environment = local.region_short
+
+  bucket_force_destroy       = true
+  bucket_object_lock_enabled = true
+  bucket_tags = {
+    Owner = "Anton"
+  }
+
+  # accelerate_configuration
+  enable_accelerate_configuration = true
+  accelerate_status               = "Suspended"
+
+  # request_payment_configuration
+  enable_request_payment_configuration = true
+  request_payment_payer                = "BucketOwner"
+
+  # Note: Object Lock configuration can be enabled only on new buckets
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_object_lock_configuration
+  # object_lock_configuration
+  enable_object_lock_configuration = true
+  object_lock_rule = [{
+    default_retention = {
+      mode = "GOVERNANCE"
+      days = 1
+    }
+  }]
+
+  # bucket policies
+  enable_policy                         = true
+  policy                                = data.aws_iam_policy_document.s3_bucket_policy.json
+  attach_deny_insecure_transport_policy = true
+  attach_require_latest_tls_policy      = true
+
+  # S3 bucket-level Public Access Block configuration
+  public_access_block_block_public_acls       = true
+  public_access_block_block_public_policy     = true
+  public_access_block_ignore_public_acls      = true
+  public_access_block_restrict_public_buckets = true
+
+  # S3 Bucket Ownership Controls
+  # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls
+  enable_ownership_controls = true
+  ownership_rule = {
+    object_ownership = "BucketOwnerPreferred"
+  }
+
+  # acl
+  enable_acl                = true
+  acl                       = "private" # "acl" conflicts with "grant" and "owner"
+  acl_expected_bucket_owner = data.aws_caller_identity.current.account_id
+
+  # logging
+  enable_logging        = true
+  logging_target_bucket = module.log_bucket.s3_bucket_id
+  logging_target_prefix = "log/"
+
+  # versioning
+  enable_versioning = true
+  versioning_configuration = {
+    status     = "Enabled"
+    mfa_delete = "Disabled"
+  }
+
+  # website configuration
+  enable_website_configuration = true
+  website_index_document = [{
+    suffix = "index.html"
+  }]
+  website_error_document = [{
+    key = "error.html"
+  }]
+  website_routing_rule = [
+    {
+      condition = [{
+        key_prefix_equals = "docs/"
+      }]
+      redirect = {
+        replace_key_prefix_with = "documents/"
+      }
+    },
+    {
+      condition = [{
+        http_error_code_returned_equals = 404
+        key_prefix_equals               = "archive/"
+      }]
+      redirect = {
+        host_name          = "archive.myhost.com"
+        http_redirect_code = 301
+        protocol           = "https"
+        replace_key_with   = "not_found.html"
+      }
+    }
+  ]
+
+  # server_side_encryption_configuration
+  enable_server_side_encryption_configuration = true
+  encryption_rule = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        kms_master_key_id = aws_kms_key.s3.arn
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
+
+  # cors_configuration
+  enable_cors_configuration = true
+  cors_rule = [
+    {
+      allowed_methods = ["PUT", "POST"]
+      allowed_origins = ["https://modules.tf", "https://terraform-aws-modules.modules.tf"]
+      allowed_headers = ["*"]
+      expose_headers  = ["ETag"]
+      max_age_seconds = 3000
+    },
+    {
+      allowed_methods = ["PUT"]
+      allowed_origins = ["https://example.com"]
+      allowed_headers = ["*"]
+      expose_headers  = ["ETag"]
+      max_age_seconds = 3000
+    }
+  ]
+
+  # lifecycle_configuration
+  enable_lifecycle_configuration = true
+  lifecycle_rule = [
+    {
+      id     = "log"
+      status = "Enabled"
+
+      filter = [
+        {
+          tags = {
+            some    = "value"
+            another = "value2"
+          }
+        }
+      ]
+
+      transition = [
+        {
+          days          = 30
+          storage_class = "ONEZONE_IA"
+        },
+        {
+          days          = 60
+          storage_class = "GLACIER"
+        }
+      ]
+
+      #        expiration = {
+      #          days = 90
+      #          expired_object_delete_marker = true
+      #        }
+
+      #        noncurrent_version_expiration = {
+      #          newer_noncurrent_versions = 5
+      #          days = 30
+      #        }
+    },
+    {
+      id     = "log1"
+      status = "Enabled"
+
+      abort_incomplete_multipart_upload_days = [
+        {
+          days_after_initiation = 7
+        }
+      ]
+
+      noncurrent_version_transition = [
+        {
+          noncurrent_days = 30
+          storage_class   = "STANDARD_IA"
+        },
+        {
+          noncurrent_days = 60
+          storage_class   = "ONEZONE_IA"
+        },
+        {
+          noncurrent_days = 90
+          storage_class   = "GLACIER"
+        },
+      ]
+
+      noncurrent_version_expiration = [
+        {
+          noncurrent_days = 300
+        }
+      ]
+    },
+    {
+      id     = "log2"
+      status = "Enabled"
+
+      filter = [
+        {
+          prefix                   = "log1/"
+          object_size_greater_than = 200000
+          object_size_less_than    = 500000
+          tags = [
+            {
+              some    = "value"
+              another = "value2"
+            }
+          ]
+        }
+      ]
+
+      noncurrent_version_transition = [
+        {
+          noncurrent_days = 30
+          storage_class   = "STANDARD_IA"
+        },
+      ]
+
+      noncurrent_version_expiration = [
+        {
+          noncurrent_days = 300
+        }
+      ]
+    },
+  ]
+
+  # intelligent_tiering_configuration
+  enable_intelligent_tiering_configuration = true
+  intelligent_tiering_configuration = {
+    general = {
+      status = "Enabled"
+      filter = [{
+        prefix = "/"
+        tags = {
+          Environment = "dev"
+        }
+      }]
+      tiering = [
+        {
+          access_tier = "ARCHIVE_ACCESS"
+          days        = 180
+        },
+      ]
+    },
+    documents = {
+      status = "Disabled"
+      filter = [{
+        prefix = "documents/"
+      }]
+      tiering = [
+        {
+          access_tier = "ARCHIVE_ACCESS"
+          days        = 125
+        },
+        {
+          access_tier = "DEEP_ARCHIVE_ACCESS"
+          days        = 200
+        },
+      ]
+    }
+  }
+
+  # metric
+  enable_metric = true
+  metric_configuration = {
+    documents = {
+      filter = [{
+        prefix = "documents/"
+        tags = {
+          priority = "high"
+        }
+      }]
+    },
+    other = {
+      filter = [{
+        tags = {
+          production = "true"
+        }
+      }]
+    },
+    all = {},
+  }
 }
