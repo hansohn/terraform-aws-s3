@@ -8,6 +8,7 @@ on:
 
 env:
   CURL: 'curl -fsSL --netrc-optional'
+  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
 jobs:
   update:
@@ -18,7 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Git CVE-2022-24765 fix
+      - name: CVE-2022-24765 fix
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - name: Update context.tf
