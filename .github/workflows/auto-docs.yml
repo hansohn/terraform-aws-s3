@@ -20,7 +20,7 @@ jobs:
       # We need that to ensure a status gets posted after the auto-format commit.
       # We also want to trigger tests if the auto-format made no changes.
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: github.event.pull_request.state == 'open'
         with:
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}

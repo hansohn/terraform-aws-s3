@@ -16,7 +16,7 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: CVE-2022-24765 fix
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -35,7 +35,7 @@ jobs:
             echo create_pull_request=true >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
-        uses: cloudposse/actions/github/create-pull-request@0.31.0
+        uses: peter-evans/create-pull-request@v7
         if: steps.update.outputs.create_pull_request == 'true'
         with:
           token: ${{ secrets.PUBLIC_REPO_ACCESS_TOKEN }}
