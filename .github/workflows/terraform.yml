@@ -57,7 +57,7 @@ jobs:
     name: Validate Minimum
     runs-on: ubuntu-latest
     container: hansohn/terraform-aws:latest
-    needs: [ versions ]
+    needs: [ locate, versions ]
     strategy:
       fail-fast: false
       matrix:
@@ -81,7 +81,7 @@ jobs:
     name: Validate Maximum
     runs-on: ubuntu-latest
     container: hansohn/terraform-aws:latest
-    needs: [ versions ]
+    needs: [ locate, versions ]
     strategy:
       fail-fast: false
       matrix:
