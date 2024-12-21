@@ -2,7 +2,7 @@
 # S3 Buckwet
 #--------------------------------------------------------------
 
-variable "enable_bucket" {
+variable "enable" {
   type        = bool
   default     = true
   description = "(Optional) Enable S3 Bucket resource creation. Defaults to true."
@@ -157,7 +157,7 @@ variable "enable_versioning" {
 
 variable "versioning_configuration" {
   type        = any
-  default     = []
+  default     = {}
   description = "(Required) Configuration block for the versioning parameters"
 }
 
@@ -179,8 +179,8 @@ variable "versioning_mfa" {
 
 variable "enable_server_side_encryption_configuration" {
   type        = bool
-  default     = false
-  description = "(Optional) Enable S3 Server Side Encryption resource creation. Defaults to false."
+  default     = true
+  description = "(Optional) Enable S3 Server Side Encryption resource creation. Defaults to true."
 }
 
 variable "encryption_expected_bucket_owner" {
@@ -189,10 +189,22 @@ variable "encryption_expected_bucket_owner" {
   description = "(Optional, Forces new resource) The account ID of the expected bucket owner."
 }
 
-variable "encryption_rule" {
-  type        = any
-  default     = []
-  description = "(Required) Set of server-side encryption configuration rules. documented below. Currently, only a single rule is supported."
+variable "encryption_bucket_key_enabled" {
+  type        = string
+  default     = null
+  description = "(Optional) Whether or not to use Amazon S3 Bucket Keys for SSE-KMS."
+}
+
+variable "encryption_sse_algorithm" {
+  type        = string
+  default     = "AES256"
+  description = "(Required) Server-side encryption algorithm to use. Valid values are AES256, aws:kms, and aws:kms:dsse. Default to 'AES256'"
+}
+
+variable "encryption_kms_master_key_id" {
+  type        = string
+  default     = null
+  description = "(Optional) AWS KMS master key ID used for the SSE-KMS encryption. This can only be used when you set the value of sse_algorithm as aws:kms. The default aws/s3 AWS KMS master key is used if this element is absent while the sse_algorithm is aws:kms."
 }
 
 #--------------------------------------------------------------
@@ -351,8 +363,8 @@ variable "replication_token" {
 
 variable "enable_policy" {
   type        = bool
-  default     = false
-  description = "(Optional) Enable S3 Policy resource creation. Defaults to false."
+  default     = true
+  description = "(Optional) Enable S3 Policy resource creation. Defaults to true."
 }
 
 variable "policy" {
@@ -363,14 +375,14 @@ variable "policy" {
 
 variable "attach_deny_insecure_transport_policy" {
   type        = bool
-  default     = false
-  description = "(Optional) Enable deny non-SSL transport bucket policy attachment. Defaults to false."
+  default     = true
+  description = "(Optional) Enable deny non-SSL transport bucket policy attachment. Defaults to true."
 }
 
 variable "attach_require_latest_tls_policy" {
   type        = bool
-  default     = false
-  description = "(Optional) Enable require latest version of TLS bucket policy attachment. Defaults to false."
+  default     = true
+  description = "(Optional) Enable require latest version of TLS bucket policy attachment. Defaults to true."
 }
 
 variable "attach_inventory_destination_policy" {
@@ -397,32 +409,32 @@ variable "inventory_source_bucket_arn" {
 
 variable "enable_public_access_block" {
   type        = bool
-  default     = false
-  description = "(Optional) Enable S3 Public Access Block resource creation. Defaults to false."
+  default     = true
+  description = "(Optional) Enable S3 Public Access Block resource creation. Defaults to true."
 }
 
 variable "public_access_block_block_public_acls" {
   type        = bool
-  default     = null
-  description = "Optional) Whether Amazon S3 should block public ACLs for this bucket. Defaults to false. Enabling this setting does not affect existing policies or ACLs. When set to true PUT Bucket acl and PUT Object acl calls will fail if the specified ACL allows public access and PUT Object calls will fail if the request includes an object ACL."
+  default     = true
+  description = "Optional) Whether Amazon S3 should block public ACLs for this bucket. Defaults to true. Enabling this setting does not affect existing policies or ACLs. When set to true PUT Bucket acl and PUT Object acl calls will fail if the specified ACL allows public access and PUT Object calls will fail if the request includes an object ACL."
 }
 
 variable "public_access_block_block_public_policy" {
   type        = bool
-  default     = null
-  description = "(Optional) Whether Amazon S3 should block public bucket policies for this bucket. Defaults to false. Enabling this setting does not affect the existing bucket policy. When set to true causes Amazon S3 to reject calls to PUT Bucket policy if the specified bucket policy allows public access."
+  default     = true
+  description = "(Optional) Whether Amazon S3 should block public bucket policies for this bucket. Defaults to true. Enabling this setting does not affect the existing bucket policy. When set to true causes Amazon S3 to reject calls to PUT Bucket policy if the specified bucket policy allows public access."
 }
 
 variable "public_access_block_ignore_public_acls" {
   type        = bool
-  default     = null
-  description = "Optional) Whether Amazon S3 should ignore public ACLs for this bucket. Defaults to false. Enabling this setting does not affect the persistence of any existing ACLs and doesn't prevent new public ACLs from being set. When set to true causes Amazon S3 to ignore public ACLs on this bucket and any objects that it contains."
+  default     = true
+  description = "Optional) Whether Amazon S3 should ignore public ACLs for this bucket. Defaults to true. Enabling this setting does not affect the persistence of any existing ACLs and doesn't prevent new public ACLs from being set. When set to true causes Amazon S3 to ignore public ACLs on this bucket and any objects that it contains."
 }
 
 variable "public_access_block_restrict_public_buckets" {
   type        = bool
-  default     = null
-  description = "(Optional) Whether Amazon S3 should restrict public bucket policies for this bucket. Defaults to false. Enabling this setting does not affect the previously stored bucket policy, except that public and cross-account access within the public bucket policy, including non-public delegation to specific accounts, is blocked. When set to true only the bucket owner and AWS Services can access this buckets if it has a public policy."
+  default     = true
+  description = "(Optional) Whether Amazon S3 should restrict public bucket policies for this bucket. Defaults to true. Enabling this setting does not affect the previously stored bucket policy, except that public and cross-account access within the public bucket policy, including non-public delegation to specific accounts, is blocked. When set to true only the bucket owner and AWS Services can access this buckets if it has a public policy."
 }
 
 #--------------------------------------------------------------
@@ -431,14 +443,14 @@ variable "public_access_block_restrict_public_buckets" {
 
 variable "enable_ownership_controls" {
   type        = bool
-  default     = false
-  description = "(Optional) Enable S3 Ownership Controls resource creation. Defaults to false."
+  default     = true
+  description = "(Optional) Enable S3 Ownership Controls resource creation. Defaults to true."
 }
 
-variable "ownership_rule" {
-  type        = any
-  default     = []
-  description = "Required) Configuration block(s) with Ownership Controls rules."
+variable "ownership_rule_object_ownership" {
+  type        = string
+  default     = "BucketOwnerEnforced"
+  description = "(Required) Object ownership. Valid values: BucketOwnerPreferred, ObjectWriter or BucketOwnerEnforced. Defaults to 'BucketOwnerEnforced'"
 }
 
 #--------------------------------------------------------------

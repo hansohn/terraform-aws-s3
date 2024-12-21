@@ -15,8 +15,8 @@ locals {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket" "this" {
-  count               = var.enable_bucket ? 1 : 0
-  bucket              = coalesce(var.bucket_name, module.this.id)
+  count               = var.enable ? 1 : 0
+  bucket              = var.bucket_name
   bucket_prefix       = var.bucket_prefix
   force_destroy       = var.bucket_force_destroy
   object_lock_enabled = var.bucket_object_lock_enabled
@@ -28,7 +28,7 @@ resource "aws_s3_bucket" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_logging" "this" {
-  count                 = var.enable_bucket && var.enable_logging ? 1 : 0
+  count                 = var.enable && var.enable_logging ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.logging_expected_bucket_owner
   target_bucket         = var.logging_target_bucket
@@ -52,7 +52,7 @@ resource "aws_s3_bucket_logging" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_acl" "this" {
-  count                 = var.enable_bucket && var.enable_acl ? 1 : 0
+  count                 = var.enable && var.enable_acl ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.acl_expected_bucket_owner
   acl                   = var.acl
@@ -90,7 +90,7 @@ resource "aws_s3_bucket_acl" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_website_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_website_configuration ? 1 : 0
+  count                 = var.enable && var.enable_website_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.website_expected_bucket_owner
   routing_rules         = var.website_routing_rules
@@ -139,7 +139,7 @@ resource "aws_s3_bucket_website_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_versioning" "this" {
-  count                 = var.enable_bucket && var.enable_versioning ? 1 : 0
+  count                 = var.enable && var.enable_versioning ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.versioning_expected_bucket_owner
   mfa                   = var.versioning_mfa
@@ -154,17 +154,14 @@ resource "aws_s3_bucket_versioning" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_server_side_encryption_configuration ? 1 : 0
+  count                 = var.enable && var.enable_server_side_encryption_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.encryption_expected_bucket_owner
   rule {
-    bucket_key_enabled = lookup(var.encryption_rule, "bucket_key_enabled", null)
-    dynamic "apply_server_side_encryption_by_default" {
-      for_each = lookup(var.encryption_rule, "apply_server_side_encryption_by_default", [])
-      content {
-        sse_algorithm     = apply_server_side_encryption_by_default.value.sse_algorithm
-        kms_master_key_id = lookup(apply_server_side_encryption_by_default.value, "kms_master_key_id", null)
-      }
+    bucket_key_enabled = var.encryption_bucket_key_enabled
+    apply_server_side_encryption_by_default {
+      sse_algorithm     = var.encryption_sse_algorithm
+      kms_master_key_id = var.encryption_kms_master_key_id
     }
   }
 }
@@ -174,7 +171,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_accelerate_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_accelerate_configuration ? 1 : 0
+  count                 = var.enable && var.enable_accelerate_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.accelerate_expected_bucket_owner
   status                = var.accelerate_status
@@ -185,7 +182,7 @@ resource "aws_s3_bucket_accelerate_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_request_payment_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_request_payment_configuration ? 1 : 0
+  count                 = var.enable && var.enable_request_payment_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.request_payment_expected_bucket_owner
   payer                 = var.request_payment_payer
@@ -196,7 +193,7 @@ resource "aws_s3_bucket_request_payment_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_cors_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_cors_configuration ? 1 : 0
+  count                 = var.enable && var.enable_cors_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.cors_expected_bucket_owner
   dynamic "cors_rule" {
@@ -217,7 +214,7 @@ resource "aws_s3_bucket_cors_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_lifecycle_configuration ? 1 : 0
+  count                 = var.enable && var.enable_lifecycle_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.lifecycle_expected_bucket_owner
   dynamic "rule" {
@@ -299,7 +296,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_object_lock_configuration" "this" {
-  count                 = var.enable_bucket && var.enable_object_lock_configuration ? 1 : 0
+  count                 = var.enable && var.enable_object_lock_configuration ? 1 : 0
   bucket                = aws_s3_bucket.this[0].id
   expected_bucket_owner = var.object_lock_expected_bucket_owner
   object_lock_enabled   = var.object_lock_object_lock_enabled
@@ -321,7 +318,7 @@ resource "aws_s3_bucket_object_lock_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_replication_configuration" "this" {
-  count  = var.enable_bucket && var.enable_replication_configuration ? 1 : 0
+  count  = var.enable && var.enable_replication_configuration ? 1 : 0
   bucket = aws_s3_bucket.this[0].id
   role   = var.replication_role
   token  = var.replication_token
@@ -481,7 +478,7 @@ data "aws_iam_policy_document" "require_latest_tls" {
 }
 
 data "aws_iam_policy_document" "inventory_destination_policy" {
-  count = var.enable_bucket && var.attach_inventory_destination_policy ? 1 : 0
+  count = var.enable && var.attach_inventory_destination_policy ? 1 : 0
   statement {
     sid    = "DestinationInventoryPolicy"
     effect = "Allow"
@@ -518,7 +515,7 @@ data "aws_iam_policy_document" "inventory_destination_policy" {
 }
 
 data "aws_iam_policy_document" "this" {
-  count = var.enable_bucket && var.enable_policy && local.attach_policy ? 1 : 0
+  count = var.enable && var.enable_policy && local.attach_policy ? 1 : 0
   source_policy_documents = compact([
     var.attach_deny_insecure_transport_policy ? data.aws_iam_policy_document.deny_insecure_transport[0].json : null,
     var.attach_inventory_destination_policy ? data.aws_iam_policy_document.inventory_destination_policy[0].json : null,
@@ -528,7 +525,7 @@ data "aws_iam_policy_document" "this" {
 }
 
 resource "aws_s3_bucket_policy" "this" {
-  count  = var.enable_bucket && var.enable_policy ? 1 : 0
+  count  = var.enable && var.enable_policy ? 1 : 0
   bucket = aws_s3_bucket.this[0].id
   policy = data.aws_iam_policy_document.this[0].json
 }
@@ -538,7 +535,7 @@ resource "aws_s3_bucket_policy" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_public_access_block" "this" {
-  count                   = var.enable_bucket && var.enable_public_access_block ? 1 : 0
+  count                   = var.enable && var.enable_public_access_block ? 1 : 0
   bucket                  = aws_s3_bucket.this[0].id
   block_public_acls       = var.public_access_block_block_public_acls
   block_public_policy     = var.public_access_block_block_public_policy
@@ -551,10 +548,10 @@ resource "aws_s3_bucket_public_access_block" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_ownership_controls" "this" {
-  count  = var.enable_bucket && var.enable_ownership_controls ? 1 : 0
+  count  = var.enable && var.enable_ownership_controls ? 1 : 0
   bucket = aws_s3_bucket.this[0].id
   rule {
-    object_ownership = var.ownership_rule.object_ownership
+    object_ownership = var.ownership_rule_object_ownership
   }
 }
 
@@ -563,7 +560,7 @@ resource "aws_s3_bucket_ownership_controls" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_intelligent_tiering_configuration" "this" {
-  for_each = { for k, v in var.intelligent_tiering_configuration : k => v if var.enable_bucket && var.enable_intelligent_tiering_configuration }
+  for_each = { for k, v in var.intelligent_tiering_configuration : k => v if var.enable && var.enable_intelligent_tiering_configuration }
   bucket   = aws_s3_bucket.this[0].id
   name     = each.key
   status   = each.value.status
@@ -588,7 +585,7 @@ resource "aws_s3_bucket_intelligent_tiering_configuration" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_metric" "this" {
-  for_each = { for k, v in var.metric_configuration : k => v if var.enable_bucket && var.enable_metric }
+  for_each = { for k, v in var.metric_configuration : k => v if var.enable && var.enable_metric }
   bucket   = aws_s3_bucket.this[0].id
   name     = each.key
   dynamic "filter" {
@@ -605,7 +602,7 @@ resource "aws_s3_bucket_metric" "this" {
 #--------------------------------------------------------------
 
 resource "aws_s3_bucket_inventory" "this" {
-  for_each                 = { for k, v in var.inventory_configuration : k => v if var.enable_bucket && var.enable_inventory }
+  for_each                 = { for k, v in var.inventory_configuration : k => v if var.enable && var.enable_inventory }
   bucket                   = aws_s3_bucket.this[0].id
   name                     = each.key
   included_object_versions = each.value.included_object_versions

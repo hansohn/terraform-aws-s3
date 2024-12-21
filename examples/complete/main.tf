@@ -10,22 +10,18 @@ data "aws_caller_identity" "current" {}
 data "aws_canonical_user_id" "current" {}
 data "aws_cloudfront_log_delivery_canonical_user_id" "cloudfront" {}
 
-module "utils" {
-  source  = "cloudposse/utils/aws"
-  version = "1.1.0"
-}
-
 locals {
-  az_map       = module.utils.region_az_alt_code_maps["to_short"]
-  region_short = local.az_map[var.region]
+  aws_account_id = data.aws_caller_identity.current.account_id
+  bucket_name    = "example-logs-${var.region}-${local.aws_account_id}"
 }
 
 resource "aws_kms_key" "s3" {
   description             = "KMS key is used to encrypt bucket objects"
+  enable_key_rotation     = true
   deletion_window_in_days = 7
 }
 
-data "aws_iam_policy_document" "ec2_role" {
+data "aws_iam_policy_document" "ec2_assume_role_policy" {
   statement {
     sid    = "Ec2AssumeRole"
     effect = "Allow"
@@ -39,34 +35,36 @@ data "aws_iam_policy_document" "ec2_role" {
   }
 }
 
-resource "aws_iam_role" "ec2_role" {
-  name               = "ec2-role"
-  assume_role_policy = data.aws_iam_policy_document.ec2_role.json
+resource "aws_iam_role" "instance_role" {
+  name               = "EC2InstanceRole"
+  path               = "/org/"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume_role_policy.json
 }
 
 data "aws_iam_policy_document" "s3_bucket_policy" {
   statement {
-    sid    = "S3ListBucket"
+    sid    = "S3ReadWrite"
     effect = "Allow"
     actions = [
-      "s3:ListBucket",
+      "s3:Get*",
+      "s3:List*",
+      "s3:Put*",
     ]
     resources = [
-      "arn:aws:s3:::${module.this.id}",
+      "arn:aws:s3:::${local.bucket_name}",
+      "arn:aws:s3:::${local.bucket_name}/*",
     ]
     principals {
       type        = "AWS"
-      identifiers = [aws_iam_role.ec2_role.arn]
+      identifiers = [aws_iam_role.instance_role.arn]
     }
   }
 }
 
 module "log_bucket" {
-  source      = "../../"
-  context     = module.this.context
-  environment = local.region_short
-  attributes  = ["logs"]
+  source = "../../"
 
+  bucket_name          = local.bucket_name
   bucket_force_destroy = true
 
   # acl
@@ -80,11 +78,9 @@ module "log_bucket" {
 }
 
 module "cloudfront_log_bucket" {
-  source      = "../../"
-  context     = module.this.context
-  environment = local.region_short
-  attributes  = ["cloudfront", "logs"]
+  source = "../../"
 
+  bucket_name          = "example-cloudfront-logs-${var.region}-${local.aws_account_id}"
   bucket_force_destroy = true
 
   # acl
@@ -115,14 +111,13 @@ module "cloudfront_log_bucket" {
 }
 
 module "s3_bucket" {
-  source      = "../../"
-  context     = module.this.context
-  environment = local.region_short
+  source = "../../"
 
+  bucket_name                = "example-${var.region}-${local.aws_account_id}"
   bucket_force_destroy       = true
   bucket_object_lock_enabled = true
   bucket_tags = {
-    Owner = "Anton"
+    Owner = "hansohn"
   }
 
   # accelerate_configuration
@@ -150,18 +145,10 @@ module "s3_bucket" {
   attach_deny_insecure_transport_policy = true
   attach_require_latest_tls_policy      = true
 
-  # S3 bucket-level Public Access Block configuration
-  public_access_block_block_public_acls       = true
-  public_access_block_block_public_policy     = true
-  public_access_block_ignore_public_acls      = true
-  public_access_block_restrict_public_buckets = true
-
   # S3 Bucket Ownership Controls
   # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls
-  enable_ownership_controls = true
-  ownership_rule = {
-    object_ownership = "BucketOwnerPreferred"
-  }
+  enable_ownership_controls       = true
+  ownership_rule_object_ownership = "BucketOwnerEnforced"
 
   # acl
   enable_acl                = true
@@ -212,15 +199,8 @@ module "s3_bucket" {
   ]
 
   # server_side_encryption_configuration
-  enable_server_side_encryption_configuration = true
-  encryption_rule = {
-    rule = {
-      apply_server_side_encryption_by_default = {
-        kms_master_key_id = aws_kms_key.s3.arn
-        sse_algorithm     = "aws:kms"
-      }
-    }
-  }
+  encryption_sse_algorithm     = "aws:kms"
+  encryption_kms_master_key_id = aws_kms_key.s3.arn
 
   # cors_configuration
   enable_cors_configuration = true
