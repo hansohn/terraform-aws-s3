@@ -16,11 +16,11 @@ locals {
 
 resource "aws_s3_bucket" "this" {
   count               = var.enable ? 1 : 0
-  bucket              = var.bucket_name
+  bucket              = var.bucket
   bucket_prefix       = var.bucket_prefix
-  force_destroy       = var.bucket_force_destroy
-  object_lock_enabled = var.bucket_object_lock_enabled
-  tags                = var.bucket_tags
+  force_destroy       = var.force_destroy
+  object_lock_enabled = var.object_lock_enabled
+  tags                = var.tags
 }
 
 #--------------------------------------------------------------
