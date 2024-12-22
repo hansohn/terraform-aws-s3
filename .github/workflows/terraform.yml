@@ -123,6 +123,7 @@ jobs:
               --only=terraform_workspace_remote
 
       - name: Terraform Docs
+        if: ${{ !startsWith(matrix.directory, './examples/') }}
         run: |
             terraform-docs \
               --lockfile=false \
