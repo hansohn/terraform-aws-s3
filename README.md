@@ -158,32 +158,32 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_s3_bucket_accelerate_configuration_id"></a> [s3\_bucket\_accelerate\_configuration\_id](#output\_s3\_bucket\_accelerate\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_acl_id"></a> [s3\_bucket\_acl\_id](#output\_s3\_bucket\_acl\_id) | The bucket, expected\_bucket\_owner (if configured), and acl (if configured) separated by commas (,). |
-| <a name="output_s3_bucket_arn"></a> [s3\_bucket\_arn](#output\_s3\_bucket\_arn) | The ARN of the bucket. Will be of format arn:aws:s3:::bucketname. |
-| <a name="output_s3_bucket_bucket_domain_name"></a> [s3\_bucket\_bucket\_domain\_name](#output\_s3\_bucket\_bucket\_domain\_name) | The bucket domain name. Will be of format bucketname.s3.amazonaws.com. |
-| <a name="output_s3_bucket_bucket_regional_domain_name"></a> [s3\_bucket\_bucket\_regional\_domain\_name](#output\_s3\_bucket\_bucket\_regional\_domain\_name) | The bucket region-specific domain name. The bucket domain name including the region name, please refer here for format. Note: The AWS CloudFront allows specifying S3 region-specific endpoint when creating S3 origin, it will prevent redirect issues from CloudFront to S3 Origin URL. |
-| <a name="output_s3_bucket_cors_configuration_id"></a> [s3\_bucket\_cors\_configuration\_id](#output\_s3\_bucket\_cors\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_hosted_zone_id"></a> [s3\_bucket\_hosted\_zone\_id](#output\_s3\_bucket\_hosted\_zone\_id) | The Route 53 Hosted Zone ID for this bucket's region. |
-| <a name="output_s3_bucket_id"></a> [s3\_bucket\_id](#output\_s3\_bucket\_id) | The name of the bucket. |
-| <a name="output_s3_bucket_lifecycle_configuration_id"></a> [s3\_bucket\_lifecycle\_configuration\_id](#output\_s3\_bucket\_lifecycle\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_logging_id"></a> [s3\_bucket\_logging\_id](#output\_s3\_bucket\_logging\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_object_lock_configuration_id"></a> [s3\_bucket\_object\_lock\_configuration\_id](#output\_s3\_bucket\_object\_lock\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_ownership_controls_id"></a> [s3\_bucket\_ownership\_controls\_id](#output\_s3\_bucket\_ownership\_controls\_id) | S3 Bucket name. |
-| <a name="output_s3_bucket_policy_bucket"></a> [s3\_bucket\_policy\_bucket](#output\_s3\_bucket\_policy\_bucket) | (Required) The name of the bucket to which to apply the policy. |
-| <a name="output_s3_bucket_policy_policy"></a> [s3\_bucket\_policy\_policy](#output\_s3\_bucket\_policy\_policy) | (Required) The text of the policy. Although this is a bucket policy rather than an IAM policy, the aws\_iam\_policy\_document data source may be used, so long as it specifies a principal. For more information about building AWS IAM policy documents with Terraform, see the AWS IAM Policy Document Guide. Note: Bucket policies are limited to 20 KB in size. |
-| <a name="output_s3_bucket_public_access_block_id"></a> [s3\_bucket\_public\_access\_block\_id](#output\_s3\_bucket\_public\_access\_block\_id) | Name of the S3 bucket the configuration is attached to |
-| <a name="output_s3_bucket_region"></a> [s3\_bucket\_region](#output\_s3\_bucket\_region) | The AWS region this bucket resides in. |
-| <a name="output_s3_bucket_replication_configuration_id"></a> [s3\_bucket\_replication\_configuration\_id](#output\_s3\_bucket\_replication\_configuration\_id) | The S3 source bucket name. |
-| <a name="output_s3_bucket_request_payment_configuration_id"></a> [s3\_bucket\_request\_payment\_configuration\_id](#output\_s3\_bucket\_request\_payment\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_server_side_encryption_configuration_id"></a> [s3\_bucket\_server\_side\_encryption\_configuration\_id](#output\_s3\_bucket\_server\_side\_encryption\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_tags_all"></a> [s3\_bucket\_tags\_all](#output\_s3\_bucket\_tags\_all) | A map of tags assigned to the resource, including those inherited from the provider default\_tags configuration block. |
-| <a name="output_s3_bucket_versioning_id"></a> [s3\_bucket\_versioning\_id](#output\_s3\_bucket\_versioning\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_website_configuration_id"></a> [s3\_bucket\_website\_configuration\_id](#output\_s3\_bucket\_website\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
-| <a name="output_s3_bucket_website_configuration_website_domain"></a> [s3\_bucket\_website\_configuration\_website\_domain](#output\_s3\_bucket\_website\_configuration\_website\_domain) | The domain of the website endpoint. This is used to create Route 53 alias records. |
-| <a name="output_s3_bucket_website_configuration_website_endpoint"></a> [s3\_bucket\_website\_configuration\_website\_endpoint](#output\_s3\_bucket\_website\_configuration\_website\_endpoint) | The website endpoint. |
-| <a name="output_s3_bucket_website_domain"></a> [s3\_bucket\_website\_domain](#output\_s3\_bucket\_website\_domain) | The domain of the website endpoint, if the bucket is configured with a website. If not, this will be an empty string. This is used to create Route 53 alias records. |
-| <a name="output_s3_bucket_website_endpoint"></a> [s3\_bucket\_website\_endpoint](#output\_s3\_bucket\_website\_endpoint) | The website endpoint, if the bucket is configured with a website. If not, this will be an empty string. |
+| <a name="output_accelerate_configuration_id"></a> [accelerate\_configuration\_id](#output\_accelerate\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_acl_id"></a> [acl\_id](#output\_acl\_id) | The bucket, expected\_bucket\_owner (if configured), and acl (if configured) separated by commas (,). |
+| <a name="output_arn"></a> [arn](#output\_arn) | The ARN of the bucket. Will be of format arn:aws:s3:::bucketname. |
+| <a name="output_bucket_domain_name"></a> [bucket\_domain\_name](#output\_bucket\_domain\_name) | The bucket domain name. Will be of format bucketname.s3.amazonaws.com. |
+| <a name="output_bucket_regional_domain_name"></a> [bucket\_regional\_domain\_name](#output\_bucket\_regional\_domain\_name) | The bucket region-specific domain name. The bucket domain name including the region name, please refer here for format. Note: The AWS CloudFront allows specifying S3 region-specific endpoint when creating S3 origin, it will prevent redirect issues from CloudFront to S3 Origin URL. |
+| <a name="output_cors_configuration_id"></a> [cors\_configuration\_id](#output\_cors\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_hosted_zone_id"></a> [hosted\_zone\_id](#output\_hosted\_zone\_id) | The Route 53 Hosted Zone ID for this bucket's region. |
+| <a name="output_id"></a> [id](#output\_id) | The name of the bucket. |
+| <a name="output_lifecycle_configuration_id"></a> [lifecycle\_configuration\_id](#output\_lifecycle\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_logging_id"></a> [logging\_id](#output\_logging\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_object_lock_configuration_id"></a> [object\_lock\_configuration\_id](#output\_object\_lock\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_ownership_controls_id"></a> [ownership\_controls\_id](#output\_ownership\_controls\_id) | S3 Bucket name. |
+| <a name="output_policy_bucket"></a> [policy\_bucket](#output\_policy\_bucket) | (Required) The name of the bucket to which to apply the policy. |
+| <a name="output_policy_policy"></a> [policy\_policy](#output\_policy\_policy) | (Required) The text of the policy. Although this is a bucket policy rather than an IAM policy, the aws\_iam\_policy\_document data source may be used, so long as it specifies a principal. For more information about building AWS IAM policy documents with Terraform, see the AWS IAM Policy Document Guide. Note: Bucket policies are limited to 20 KB in size. |
+| <a name="output_public_access_block_id"></a> [public\_access\_block\_id](#output\_public\_access\_block\_id) | Name of the S3 bucket the configuration is attached to |
+| <a name="output_region"></a> [region](#output\_region) | The AWS region this bucket resides in. |
+| <a name="output_replication_configuration_id"></a> [replication\_configuration\_id](#output\_replication\_configuration\_id) | The S3 source bucket name. |
+| <a name="output_request_payment_configuration_id"></a> [request\_payment\_configuration\_id](#output\_request\_payment\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_server_side_encryption_configuration_id"></a> [server\_side\_encryption\_configuration\_id](#output\_server\_side\_encryption\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_tags_all"></a> [tags\_all](#output\_tags\_all) | A map of tags assigned to the resource, including those inherited from the provider default\_tags configuration block. |
+| <a name="output_versioning_id"></a> [versioning\_id](#output\_versioning\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_website_configuration_id"></a> [website\_configuration\_id](#output\_website\_configuration\_id) | The bucket or bucket and expected\_bucket\_owner separated by a comma (,) if the latter is provided. |
+| <a name="output_website_configuration_website_domain"></a> [website\_configuration\_website\_domain](#output\_website\_configuration\_website\_domain) | The domain of the website endpoint. This is used to create Route 53 alias records. |
+| <a name="output_website_configuration_website_endpoint"></a> [website\_configuration\_website\_endpoint](#output\_website\_configuration\_website\_endpoint) | The website endpoint. |
+| <a name="output_website_domain"></a> [website\_domain](#output\_website\_domain) | The domain of the website endpoint, if the bucket is configured with a website. If not, this will be an empty string. This is used to create Route 53 alias records. |
+| <a name="output_website_endpoint"></a> [website\_endpoint](#output\_website\_endpoint) | The website endpoint, if the bucket is configured with a website. If not, this will be an empty string. |
 <!-- END_TF_DOCS -->
 
 <!-- MARKDOWN LINKS & IMAGES -->

@@ -159,7 +159,7 @@ module "s3_bucket" {
 
   # logging
   enable_logging        = true
-  logging_target_bucket = module.log_bucket.s3_bucket_id
+  logging_target_bucket = module.log_bucket.id
   logging_target_prefix = "log/"
 
   # versioning
