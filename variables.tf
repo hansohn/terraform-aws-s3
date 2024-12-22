@@ -8,7 +8,7 @@ variable "enable" {
   description = "(Optional) Enable S3 Bucket resource creation. Defaults to true."
 }
 
-variable "bucket_name" {
+variable "bucket" {
   type        = string
   default     = null
   description = "(Optional, Forces new resource) The name of the bucket. If omitted, Terraform will assign a random, unique name. Must be lowercase and less than or equal to 63 characters in length."
@@ -20,19 +20,19 @@ variable "bucket_prefix" {
   description = "(Optional, Forces new resource) Creates a unique bucket name beginning with the specified prefix. Conflicts with bucket. Must be lowercase and less than or equal to 37 characters in length."
 }
 
-variable "bucket_force_destroy" {
+variable "force_destroy" {
   type        = string
   default     = null
   description = "(Optional, Default:false) A boolean that indicates all objects (including any locked objects) should be deleted from the bucket when the bucket is destroyed so that the bucket can be destroyed without error. These objects are not recoverable. This only deletes objects when the bucket is destroyed, not when setting this parameter to true."
 }
 
-variable "bucket_object_lock_enabled" {
+variable "object_lock_enabled" {
   type        = string
   default     = null
   description = "(Optional, Forces new resource) Indicates whether this bucket has an Object Lock configuration enabled. Valid values are true or false. This argument is not supported in all regions or partitions."
 }
 
-variable "bucket_tags" {
+variable "tags" {
   type        = map(string)
   default     = null
   description = "(Optional) A map of tags to assign to the bucket. If configured with a provider default_tags configuration block present, tags with matching keys will overwrite those defined at the provider-level."

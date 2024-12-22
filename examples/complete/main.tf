@@ -11,8 +11,10 @@ data "aws_canonical_user_id" "current" {}
 data "aws_cloudfront_log_delivery_canonical_user_id" "cloudfront" {}
 
 locals {
-  aws_account_id = data.aws_caller_identity.current.account_id
-  bucket_name    = "example-logs-${var.region}-${local.aws_account_id}"
+  aws_account_id         = data.aws_caller_identity.current.account_id
+  bucket                 = "example-${var.region}-${local.aws_account_id}"
+  logs_bucket            = "example-logs-${var.region}-${local.aws_account_id}"
+  cloudfront_logs_bucket = "example-cloudfront-logs-${var.region}-${local.aws_account_id}"
 }
 
 resource "aws_kms_key" "s3" {
@@ -51,8 +53,8 @@ data "aws_iam_policy_document" "s3_bucket_policy" {
       "s3:Put*",
     ]
     resources = [
-      "arn:aws:s3:::${local.bucket_name}",
-      "arn:aws:s3:::${local.bucket_name}/*",
+      "arn:aws:s3:::${local.bucket}",
+      "arn:aws:s3:::${local.bucket}/*",
     ]
     principals {
       type        = "AWS"
@@ -64,8 +66,8 @@ data "aws_iam_policy_document" "s3_bucket_policy" {
 module "log_bucket" {
   source = "../../"
 
-  bucket_name          = local.bucket_name
-  bucket_force_destroy = true
+  bucket        = local.logs_bucket
+  force_destroy = true
 
   # acl
   enable_acl = true
@@ -80,8 +82,8 @@ module "log_bucket" {
 module "cloudfront_log_bucket" {
   source = "../../"
 
-  bucket_name          = "example-cloudfront-logs-${var.region}-${local.aws_account_id}"
-  bucket_force_destroy = true
+  bucket        = local.cloudfront_logs_bucket
+  force_destroy = true
 
   # acl
   enable_acl = true
@@ -113,10 +115,10 @@ module "cloudfront_log_bucket" {
 module "s3_bucket" {
   source = "../../"
 
-  bucket_name                = "example-${var.region}-${local.aws_account_id}"
-  bucket_force_destroy       = true
-  bucket_object_lock_enabled = true
-  bucket_tags = {
+  bucket              = local.bucket
+  force_destroy       = true
+  object_lock_enabled = true
+  tags = {
     Owner = "hansohn"
   }
 
