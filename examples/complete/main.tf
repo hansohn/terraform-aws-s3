@@ -227,44 +227,37 @@ module "s3_bucket" {
   enable_lifecycle_configuration = true
   lifecycle_rule = [
     {
-      id     = "log"
+      id     = "InfrequentAccess"
       status = "Enabled"
 
       filter = [
         {
-          tags = {
-            some    = "value"
-            another = "value2"
-          }
+          prefix = ""
         }
       ]
 
       transition = [
         {
           days          = 30
-          storage_class = "ONEZONE_IA"
+          storage_class = "STANDARD_IA"
         },
         {
           days          = 60
           storage_class = "GLACIER"
         }
       ]
-
-      #        expiration = {
-      #          days = 90
-      #          expired_object_delete_marker = true
-      #        }
-
-      #        noncurrent_version_expiration = {
-      #          newer_noncurrent_versions = 5
-      #          days = 30
-      #        }
     },
     {
-      id     = "log1"
+      id     = "NoncurrentVersion"
       status = "Enabled"
 
-      abort_incomplete_multipart_upload_days = [
+      filter = [
+        {
+          prefix = ""
+        }
+      ]
+
+      abort_incomplete_multipart_upload = [
         {
           days_after_initiation = 7
         }
@@ -272,53 +265,19 @@ module "s3_bucket" {
 
       noncurrent_version_transition = [
         {
-          noncurrent_days = 30
+          noncurrent_days = 0
           storage_class   = "STANDARD_IA"
         },
         {
-          noncurrent_days = 60
-          storage_class   = "ONEZONE_IA"
-        },
-        {
-          noncurrent_days = 90
+          noncurrent_days = 30
           storage_class   = "GLACIER"
         },
       ]
 
       noncurrent_version_expiration = [
         {
-          noncurrent_days = 300
-        }
-      ]
-    },
-    {
-      id     = "log2"
-      status = "Enabled"
-
-      filter = [
-        {
-          prefix                   = "log1/"
-          object_size_greater_than = 200000
-          object_size_less_than    = 500000
-          tags = [
-            {
-              some    = "value"
-              another = "value2"
-            }
-          ]
-        }
-      ]
-
-      noncurrent_version_transition = [
-        {
-          noncurrent_days = 30
-          storage_class   = "STANDARD_IA"
-        },
-      ]
-
-      noncurrent_version_expiration = [
-        {
-          noncurrent_days = 300
+          newer_noncurrent_versions = 2
+          noncurrent_days           = 60
         }
       ]
     },

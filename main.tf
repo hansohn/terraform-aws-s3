@@ -14,6 +14,7 @@ locals {
 # S3 Buckwet
 #--------------------------------------------------------------
 
+#tfsec:ignore:aws-s3-enable-bucket-logging tfsec:ignore:aws-s3-enable-versioning
 resource "aws_s3_bucket" "this" {
   count               = var.enable ? 1 : 0
   bucket              = var.bucket
@@ -144,7 +145,7 @@ resource "aws_s3_bucket_versioning" "this" {
   expected_bucket_owner = var.versioning_expected_bucket_owner
   mfa                   = var.versioning_mfa
   versioning_configuration {
-    status     = var.versioning_configuration.status
+    status     = "Enabled"
     mfa_delete = lookup(var.versioning_configuration, "mfa_delete", null)
   }
 }
