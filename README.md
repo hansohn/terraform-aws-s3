@@ -21,11 +21,11 @@
   </p>
 </div>
 
-## :open_book: Usage
+## Usage
 
 Welcome to the terraform-aws-s3 repo!
 
-## :octocat: Examples
+## Examples
 
 Please see the sample set of examples below for a better understanding of implementation
 
@@ -37,13 +37,13 @@ Please see the sample set of examples below for a better understanding of implem
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
 
 ## Modules
 
