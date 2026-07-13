@@ -21,7 +21,54 @@
   </p>
 </div>
 
+> [!WARNING]
+> ## ⚠️ Deprecated — this module is no longer maintained
+>
+> This module is **deprecated** and will not receive further updates or bug fixes.
+> Please migrate to the community-standard, actively maintained module:
+>
+> ### 👉 [`terraform-aws-modules/s3-bucket/aws`](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest)
+>
+> It covers the same functionality (encryption, versioning, lifecycle, replication,
+> logging, CORS, object lock, intelligent tiering, metrics, inventory, and more) with
+> broader feature coverage (notification and object submodules), active maintenance, and
+> wide community adoption.
+>
+> **Reproducing this module's secure-by-default posture** is a matter of setting a few
+> inputs on the upstream module:
+>
+> ```hcl
+> module "s3" {
+>   source  = "terraform-aws-modules/s3-bucket/aws"
+>   version = "~> 4.2"
+>
+>   bucket = "my-bucket"
+>
+>   # secure-by-default posture
+>   attach_deny_insecure_transport_policy = true
+>   attach_require_latest_tls_policy      = true
+>
+>   block_public_acls       = true
+>   block_public_policy     = true
+>   ignore_public_acls      = true
+>   restrict_public_buckets = true
+>
+>   control_object_ownership = true
+>   object_ownership         = "BucketOwnerEnforced"
+>
+>   server_side_encryption_configuration = {
+>     rule = {
+>       apply_server_side_encryption_by_default = {
+>         sse_algorithm = "AES256"
+>       }
+>     }
+>   }
+> }
+> ```
+
 ## Usage
+
+> **Note:** This module is deprecated (see the notice above). Prefer [`terraform-aws-modules/s3-bucket/aws`](https://registry.terraform.io/modules/terraform-aws-modules/s3-bucket/aws/latest).
 
 Welcome to the terraform-aws-s3 repo!
 
